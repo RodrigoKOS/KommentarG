@@ -22,3 +22,6 @@ Thumbs.db
 .idea/
 *.log
 coverage/
+
+# permite exemplo
+!.env.example
