@@ -1,0 +1,15 @@
+{
+  "name": "kommentarg",
+  "version": "0.1.0",
+  "private": true,
+  "description": "KommentarG - API estilo Elfsight para reviews do Google",
+  "scripts": {
+    "dev": "node --watch api-dev.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@vercel/node": "^3.2.0",
+    "typescript": "^5.6.0"
+  }
+}

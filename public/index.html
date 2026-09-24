@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KommentarG - Teste</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; padding: 0 20px; }
+    .card { border: 1px solid #ddd; border-radius: 12px; padding: 16px; margin: 12px 0; }
+    .stars { color: #f5a623; }
+  </style>
+</head>
+<body>
+  <h1>KommentarG - Teste visual</h1>
+  <p>Se você está vendo esta página na Vercel, a base está funcionando.</p>
+  <p>Dados de teste (falsos) vindos de <code>/api/reviews</code>:</p>
+  <div id="lista">Carregando...</div>
+
+  <h2>Como colocar no seu site (futuro)</h2>
+  <pre>&lt;script src="/widget.js" data-api="/api/reviews"&gt;&lt;/script&gt;</pre>
+
+  <script>
+    fetch('/api/reviews')
+      .then(r => r.json())
+      .then(d => {
+        const el = document.getElementById('lista');
+        el.innerHTML = '<p><b>' + d.business + ' - ' + d.rating + ' estrelas (' + d.total + ')</b> - ' + d.mode + '</p>' +
+          d.reviews.map(r => '<div class="card"><div class="stars">' + '★'.repeat(r.stars) + '</div><p>' + r.text + '</p><small>' + r.author + ' em ' + r.date + '</small></div>').join('');
+      })
+      .catch(() => { document.getElementById('lista').innerText = 'Erro ao carregar API'; });
+  </script>
+</body>
+</html>
