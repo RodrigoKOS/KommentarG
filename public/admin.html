@@ -3,7 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>KommentarG — Configurar widget</title>
+  <meta name="theme-color" content="#f4f5f7" />
+  <meta name="color-scheme" content="light" />
+  <title>KommentarG — Configurar Widget</title>
   <style>
     :root {
       --bg: #f4f5f7;
@@ -16,13 +18,21 @@
       --radius: 14px;
     }
     * { box-sizing: border-box; }
+    html { color-scheme: light; }
     body {
       margin: 0;
       font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
       -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: rgba(21, 94, 239, 0.15);
     }
+    .skip {
+      position: absolute; left: 12px; top: -48px; z-index: 20;
+      background: var(--primary); color: #fff; padding: 10px 16px; border-radius: 8px;
+      transition: top 0.15s ease;
+    }
+    .skip:focus-visible { top: 12px; }
     .top {
       position: sticky; top: 0; z-index: 10;
       background: rgba(255,255,255,.9);
@@ -30,26 +40,33 @@
       border-bottom: 1px solid var(--border);
     }
     .top-inner {
-      max-width: 1240px; margin: 0 auto; padding: 14px 24px;
+      max-width: 1240px; margin: 0 auto;
+      padding: 14px max(24px, env(safe-area-inset-right)) 14px max(24px, env(safe-area-inset-left));
       display: flex; align-items: center; justify-content: space-between; gap: 12px;
     }
-    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+    .brand { display: flex; align-items: center; gap: 10px; }
     .brand-mark {
       width: 30px; height: 30px; border-radius: 9px;
       background: #101828; color: #fff;
       display: inline-flex; align-items: center; justify-content: center;
-      font-size: 16px;
+      font-size: 16px; font-weight: 700;
     }
-    .brand small { display: block; font-weight: 500; color: var(--muted); font-size: 12px; }
+    .brand-text { font-weight: 700; }
+    .brand-text small { display: block; font-weight: 500; color: var(--muted); font-size: 12px; }
+    h1 { font-size: 0; width: 1px; height: 1px; margin: 0; overflow: hidden; position: absolute; }
     .top-actions { display: flex; gap: 8px; }
     .btn {
       border: 1px solid var(--border); background: var(--surface); color: var(--text);
       border-radius: 10px; padding: 9px 14px; cursor: pointer; font-weight: 600; font-size: 14px;
+      touch-action: manipulation;
     }
-    .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+    .btn:hover { border-color: #b2b9c4; background: #f8fafc; }
     .btn.primary { background: var(--primary); border-color: var(--primary); color: var(--primary-ink); }
+    .btn.primary:hover { background: #0e4fd6; border-color: #0e4fd6; }
+    .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
     .main {
-      max-width: 1240px; margin: 0 auto; padding: 20px 24px 40px;
+      max-width: 1240px; margin: 0 auto;
+      padding: 20px max(24px, env(safe-area-inset-right)) 40px max(24px, env(safe-area-inset-left));
       display: grid; grid-template-columns: 380px 1fr; gap: 18px; align-items: start;
     }
     @media (max-width: 960px) { .main { grid-template-columns: 1fr; } }
@@ -63,6 +80,7 @@
     .section h2 {
       margin: 0 0 4px; font-size: 12px; letter-spacing: .06em;
       text-transform: uppercase; color: var(--muted);
+      text-wrap: balance;
     }
     .section p.desc { margin: 0 0 10px; font-size: 13px; color: var(--muted); }
     label.field { display: block; font-size: 13px; font-weight: 600; margin: 12px 0 6px; }
@@ -70,7 +88,10 @@
       width: 100%; padding: 10px 12px; font-size: 14px;
       border: 1px solid #d0d5dd; border-radius: 10px; background: #fff; color: var(--text);
     }
-    input:focus, select:focus, textarea:focus { outline: 2px solid rgba(21,94,239,.35); border-color: var(--primary); }
+    input[type=number] { font-variant-numeric: tabular-nums; }
+    input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible {
+      outline: 2px solid var(--primary); outline-offset: 2px; border-color: var(--primary);
+    }
     .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
     .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .segmented { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -78,45 +99,50 @@
       border: 1px solid #d0d5dd; border-radius: 10px; padding: 10px;
       text-align: center; cursor: pointer; font-size: 14px; font-weight: 600; margin: 0;
     }
+    .segmented label:hover { border-color: #b2b9c4; background: #f8fafc; }
     .segmented input { position: absolute; opacity: 0; pointer-events: none; }
-    .segmented input:checked + span { font-weight: 700; }
     .segmented label:has(input:checked) { border-color: var(--primary); background: #eff4ff; color: #0b3dbd; }
-    .switch { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 0; font-size: 14px; }
-    .switch input { width: 40px; height: 22px; accent-color: var(--primary); }
-    .preview-wrap { position: sticky; top: 76px; }
+    .segmented label:has(input:focus-visible) { outline: 2px solid var(--primary); outline-offset: 2px; }
+    label.switch { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 0; font-size: 14px; cursor: pointer; }
+    label.switch input { width: 40px; height: 22px; accent-color: var(--primary); flex-shrink: 0; }
+    .preview-wrap { position: sticky; top: 76px; scroll-margin-top: 76px; }
     @media (max-width: 960px) { .preview-wrap { position: static; } }
     .preview-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-    .preview-head h2 { margin: 0; font-size: 16px; }
-    .view-toggle { display: flex; gap: 6px; }
+    .preview-head h2 { margin: 0; font-size: 16px; text-wrap: balance; }
     #preview { border: 1px dashed #cfd4dc; border-radius: 12px; padding: 22px; background: #fff; min-height: 320px; }
     #preview.dark { background: #131314; color: #e8eaed; }
     textarea#code { min-height: 130px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
     .color-row { display: grid; grid-template-columns: 36px 1fr; gap: 8px; align-items: center; }
     input[type=color] { width: 36px; height: 36px; border: 1px solid #d0d5dd; border-radius: 9px; padding: 2px; background: #fff; }
+    @media (prefers-reduced-motion: reduce) {
+      .skip { transition: none; }
+    }
   </style>
 </head>
 <body>
+  <a class="skip" href="#config">Pular para a configuração</a>
+  <h1 translate="no">KommentarG — Configurar Widget</h1>
   <header class="top">
     <div class="top-inner">
       <div class="brand">
-        <span class="brand-mark">K</span>
-        <span>KommentarG<small>Configurar widget de avaliações</small></span>
+        <span class="brand-mark" aria-hidden="true">K</span>
+        <span class="brand-text"><span translate="no">KommentarG</span><small>Configurar widget de avaliações</small></span>
       </div>
       <div class="top-actions">
-        <button class="btn" id="btn-preview-light">Pré-visualizar claro</button>
-        <button class="btn" id="btn-preview-dark">Pré-visualizar escuro</button>
-        <button class="btn primary" id="btn-copy-top">Copiar código</button>
+        <button class="btn" id="btn-preview-light" type="button">Pré-visualizar Claro</button>
+        <button class="btn" id="btn-preview-dark" type="button">Pré-visualizar Escuro</button>
+        <button class="btn primary" id="btn-copy-top" type="button">Copiar Código</button>
       </div>
     </div>
   </header>
 
-  <main class="main">
-    <section class="card" aria-label="Configurações">
+  <main class="main" id="config">
+    <section class="card" aria-label="Configurações do widget">
       <div class="section">
         <h2>Empresa</h2>
         <p class="desc">Qual avaliação mostrar. Vazio usa o padrão.</p>
         <label class="field" for="f-place">Place ID</label>
-        <input id="f-place" type="text" placeholder="ChIJ... (vazio = padrão Desata)" autocomplete="off" />
+        <input id="f-place" name="place" type="text" placeholder="Ex.: ChIJ…" autocomplete="off" spellcheck="false" />
         <div class="hint">Encontre no Localizador de Place ID do Google Maps.</div>
       </div>
 
@@ -126,20 +152,20 @@
         <div class="grid2">
           <div>
             <label class="field" for="f-limit">Máximo</label>
-            <input id="f-limit" type="number" min="1" max="20" value="6" />
+            <input id="f-limit" name="limit" type="number" min="1" max="20" value="6" autocomplete="off" />
           </div>
           <div>
             <label class="field" for="f-min">Nota mínima</label>
-            <select id="f-min">
+            <select id="f-min" name="min-stars">
               <option value="0">Todas</option>
               <option value="3">3+</option>
-              <option value="4" selected>4+ (recomendado)</option>
+              <option value="4" selected>4+ (Recomendado)</option>
               <option value="5">Somente 5</option>
             </select>
           </div>
         </div>
         <label class="field" for="f-sort">Ordem</label>
-        <select id="f-sort">
+        <select id="f-sort" name="sort">
           <option value="recent" selected>Mais recentes primeiro</option>
           <option value="highest">Maior nota</option>
           <option value="lowest">Menor nota</option>
@@ -149,33 +175,33 @@
 
       <div class="section">
         <h2>Layout</h2>
-        <label class="field">Apresentação</label>
-        <div class="segmented" role="radiogroup" aria-label="Tipo de layout">
+        <span class="field" id="layout-label">Apresentação</span>
+        <div class="segmented" role="radiogroup" aria-labelledby="layout-label">
           <label><input type="radio" name="layout" value="carousel" checked /><span>Carrossel</span></label>
           <label><input type="radio" name="layout" value="grid" /><span>Grade</span></label>
         </div>
         <div class="grid2">
           <div>
             <label class="field" for="f-auto">Autoplay (seg)</label>
-            <input id="f-auto" type="number" min="0" max="30" value="0" />
+            <input id="f-auto" name="autoplay" type="number" min="0" max="30" value="0" autocomplete="off" />
           </div>
           <div>
             <label class="field" for="f-title">Título</label>
-            <input id="f-title" type="text" value="Avaliações" />
+            <input id="f-title" name="title" type="text" value="Avaliações" autocomplete="off" />
           </div>
         </div>
-        <div class="switch"><span>Cabeçalho com nota</span><input id="f-header" type="checkbox" checked /></div>
-        <div class="switch"><span>Fotos dos autores</span><input id="f-photos" type="checkbox" checked /></div>
-        <div class="switch"><span>Data da avaliação</span><input id="f-date" type="checkbox" checked /></div>
-        <div class="switch"><span>Setas de navegação</span><input id="f-arrows" type="checkbox" checked /></div>
-        <div class="switch"><span>Bolinhas de página</span><input id="f-dots" type="checkbox" checked /></div>
+        <label class="switch"><span>Cabeçalho com nota</span><input id="f-header" type="checkbox" checked /></label>
+        <label class="switch"><span>Fotos dos autores</span><input id="f-photos" type="checkbox" checked /></label>
+        <label class="switch"><span>Data da avaliação</span><input id="f-date" type="checkbox" checked /></label>
+        <label class="switch"><span>Setas de navegação</span><input id="f-arrows" type="checkbox" checked /></label>
+        <label class="switch"><span>Bolinhas de página</span><input id="f-dots" type="checkbox" checked /></label>
       </div>
 
       <div class="section">
         <h2>Aparência</h2>
         <label class="field" for="f-theme">Tema</label>
-        <select id="f-theme">
-          <option value="auto" selected>Automático (herda o site)</option>
+        <select id="f-theme" name="theme">
+          <option value="auto" selected>Automático (Herda o Site)</option>
           <option value="light">Claro</option>
           <option value="dark">Escuro</option>
         </select>
@@ -183,15 +209,15 @@
           <div>
             <label class="field" for="f-bg">Fundo do cartão</label>
             <div class="color-row">
-              <input id="f-bg-color" type="color" value="#f1f3f4" aria-label="Cor de fundo" />
-              <input id="f-bg" type="text" placeholder="transparent ou #f1f3f4" />
+              <input id="f-bg-color" type="color" value="#f1f3f4" aria-label="Escolher cor de fundo" />
+              <input id="f-bg" name="bg" type="text" placeholder="Ex.: transparent…" autocomplete="off" spellcheck="false" />
             </div>
           </div>
           <div>
             <label class="field" for="f-text">Cor do texto</label>
             <div class="color-row">
-              <input id="f-text-color" type="color" value="#202124" aria-label="Cor do texto" />
-              <input id="f-text" type="text" placeholder="herdado do site" />
+              <input id="f-text-color" type="color" value="#202124" aria-label="Escolher cor do texto" />
+              <input id="f-text" name="text" type="text" placeholder="Ex.: #202124…" autocomplete="off" spellcheck="false" />
             </div>
           </div>
         </div>
@@ -199,13 +225,13 @@
           <div>
             <label class="field" for="f-stars">Cor das estrelas</label>
             <div class="color-row">
-              <input id="f-stars-color" type="color" value="#FBBC04" aria-label="Cor das estrelas" />
-              <input id="f-stars" type="text" value="#FBBC04" />
+              <input id="f-stars-color" type="color" value="#FBBC04" aria-label="Escolher cor das estrelas" />
+              <input id="f-stars" name="stars" type="text" value="#FBBC04" autocomplete="off" spellcheck="false" />
             </div>
           </div>
           <div>
             <label class="field" for="f-radius">Cantos</label>
-            <select id="f-radius">
+            <select id="f-radius" name="radius">
               <option value="8px">Suave</option>
               <option value="12px" selected>Padrão</option>
               <option value="18px">Arredondado</option>
@@ -216,22 +242,22 @@
       </div>
     </section>
 
-    <section>
+    <section aria-label="Pré-visualização e instalação">
       <div class="card preview-wrap">
         <div class="preview-head">
-          <h2>Pré-visualização ao vivo</h2>
-          <span class="hint" id="preview-status">Atualiza a cada ajuste</span>
+          <h2>Pré-visualização ao Vivo</h2>
+          <span class="hint" id="preview-status" aria-live="polite">Atualiza a cada ajuste</span>
         </div>
         <div id="preview"><div id="kommentarg"></div></div>
       </div>
 
       <div class="card" style="margin-top:14px">
         <div class="preview-head">
-          <h2>Instalar no site</h2>
-          <button class="btn primary" id="btn-copy">Copiar</button>
+          <h2>Instalar no Site</h2>
+          <button class="btn primary" id="btn-copy" type="button">Copiar</button>
         </div>
-        <p class="hint">Cole antes de <code>&lt;/body&gt;</code>. Funciona em WordPress (bloco HTML), Shopify, Wix e HTML puro.</p>
-        <textarea id="code" readonly spellcheck="false"></textarea>
+        <p class="hint">Cole antes de <code translate="no">&lt;/body&gt;</code>. Funciona em WordPress (bloco HTML), Shopify, Wix e HTML puro.</p>
+        <textarea id="code" readonly spellcheck="false" aria-label="Código de instalação do widget"></textarea>
       </div>
     </section>
   </main>
@@ -248,12 +274,8 @@
       if (!t || !p) return;
       if (/^#[0-9a-fA-F]{6}$/.test(t.value.trim())) p.value = t.value.trim();
     }
-    function build() {
-      syncColor('f-bg', 'f-bg-color'); syncColor('f-text', 'f-text-color'); syncColor('f-stars', 'f-stars-color');
-      var status = document.getElementById('preview-status');
-      if (status) status.textContent = 'Atualizando...';
-      var attrs = {
-        'data-api': location.origin + '/api/reviews',
+    function currentAttrs() {
+      return {
         'data-place': v('f-place'),
         'data-limit': v('f-limit') || '6',
         'data-min-stars': document.getElementById('f-min').value,
@@ -270,19 +292,25 @@
         'data-bg': v('f-bg'), 'data-text': v('f-text'),
         'data-stars': v('f-stars'), 'data-radius': document.getElementById('f-radius').value
       };
+    }
+    function build(pushState) {
+      syncColor('f-bg', 'f-bg-color'); syncColor('f-text', 'f-text-color'); syncColor('f-stars', 'f-stars-color');
+      var status = document.getElementById('preview-status');
+      if (status) status.textContent = 'Atualizando…';
+      var attrs = currentAttrs();
       var holder = document.getElementById('kommentarg');
       if (holder) holder.innerHTML = '';
       document.querySelectorAll('script[data-kg]').forEach(function (e) { e.remove(); });
       var sc = document.createElement('script');
       sc.setAttribute('data-kg', '1');
       sc.src = '/widget.js';
+      sc.setAttribute('data-api', location.origin + '/api/reviews');
       Object.keys(attrs).forEach(function (k) { if (attrs[k] !== '') sc.setAttribute(k, attrs[k]); });
       sc.onload = function () { if (status) status.textContent = 'Prévia atualizada'; };
       document.getElementById('preview').appendChild(sc);
 
       var lines = ['<div id="kommentarg"></div>', '<script src="' + location.origin + '/widget.js"'];
       Object.keys(attrs).forEach(function (k) {
-        if (k === 'data-api') return;
         if (attrs[k] === '') return;
         lines[lines.length - 1] += '\n  ' + k + '="' + attrs[k].replace(/"/g, '&quot;') + '"';
       });
@@ -290,12 +318,23 @@
       lines.push('<\/script>');
       document.getElementById('code').value = lines.join('\n');
       try { localStorage.setItem('kg-admin', JSON.stringify(attrs)); } catch (e) {}
+      if (pushState !== false) {
+        try {
+          var q = new URLSearchParams();
+          ['data-place', 'data-limit', 'data-min-stars', 'data-sort', 'data-layout', 'data-theme'].forEach(function (k) {
+            if (attrs[k]) q.set(k.replace('data-', ''), attrs[k]);
+          });
+          history.replaceState(null, '', location.pathname + '?' + q.toString());
+        } catch (e) {}
+      }
     }
     function copy() {
       var t = document.getElementById('code');
       t.select();
       try { document.execCommand('copy'); } catch (e) {}
       if (navigator.clipboard) navigator.clipboard.writeText(t.value);
+      var status = document.getElementById('preview-status');
+      if (status) status.textContent = 'Código copiado. Cole no seu site.';
     }
     document.getElementById('btn-copy').addEventListener('click', copy);
     document.getElementById('btn-copy-top').addEventListener('click', copy);
@@ -313,25 +352,41 @@
       });
     });
     ['f-place','f-limit','f-min','f-sort','f-auto','f-title','f-theme','f-bg','f-text','f-stars','f-radius'].forEach(function (id) {
-      document.getElementById(id).addEventListener('change', build);
+      document.getElementById(id).addEventListener('change', function () { build(); });
       document.getElementById(id).addEventListener('input', function () {
-        clearTimeout(window.__kgT); window.__kgT = setTimeout(build, 350);
+        clearTimeout(window.__kgT); window.__kgT = setTimeout(function () { build(); }, 350);
       });
     });
     ['f-header','f-photos','f-date','f-arrows','f-dots'].forEach(function (id) {
-      document.getElementById(id).addEventListener('change', build);
+      document.getElementById(id).addEventListener('change', function () { build(); });
     });
     document.querySelectorAll('input[name="layout"]').forEach(function (el) {
-      el.addEventListener('change', build);
+      el.addEventListener('change', function () { build(); });
     });
     (function restore() {
+      var fromUrl = {};
       try {
-        var s = JSON.parse(localStorage.getItem('kg-admin') || '{}');
-        if (s['data-place']) document.getElementById('f-place').value = s['data-place'];
-        if (s['data-limit']) document.getElementById('f-limit').value = s['data-limit'];
+        var q = new URLSearchParams(location.search);
+        ['place', 'limit', 'min-stars', 'sort', 'layout', 'theme', 'title'].forEach(function (k) {
+          var val = q.get(k);
+          if (val) fromUrl['data-' + k] = val;
+        });
       } catch (e) {}
+      var saved = {};
+      try { saved = JSON.parse(localStorage.getItem('kg-admin') || '{}'); } catch (e) {}
+      var s = Object.assign({}, saved, fromUrl);
+      if (s['data-place']) document.getElementById('f-place').value = s['data-place'];
+      if (s['data-limit']) document.getElementById('f-limit').value = s['data-limit'];
+      if (s['data-min-stars']) document.getElementById('f-min').value = s['data-min-stars'];
+      if (s['data-sort']) document.getElementById('f-sort').value = s['data-sort'];
+      if (s['data-theme']) document.getElementById('f-theme').value = s['data-theme'];
+      if (s['data-title']) document.getElementById('f-title').value = s['data-title'];
+      if (s['data-layout']) {
+        var r = document.querySelector('input[name="layout"][value="' + s['data-layout'] + '"]');
+        if (r) r.checked = true;
+      }
     })();
-    build();
+    build(false);
   </script>
 </body>
 </html>
