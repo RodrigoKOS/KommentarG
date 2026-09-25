@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KommentarG - Montar widget (estilo Elfsight / ACF)</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; margin: 0; background: #f6f7f9; color: #202124; }
+    .top { background: #fff; border-bottom: 1px solid #e1e3e6; padding: 14px 20px; position: sticky; top: 0; z-index: 5; }
+    .main { display: grid; grid-template-columns: 360px 1fr; gap: 16px; padding: 16px 20px; max-width: 1200px; margin: 0 auto; }
+    @media (max-width: 900px) { .main { grid-template-columns: 1fr; } }
+    .panel { background: #fff; border: 1px solid #e1e3e6; border-radius: 12px; padding: 16px; }
+    .group { border: 1px solid #eef0f3; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+    .group h3 { margin: 0 0 10px; font-size: 14px; text-transform: uppercase; letter-spacing: .04em; color: #5f6368; }
+    label { display: block; font-size: 13px; margin: 8px 0 4px; }
+    input[type=text], input[type=number], select { width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #dadce0; border-radius: 8px; }
+    .row { display: flex; gap: 8px; } .row > * { flex: 1; }
+    .check { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 14px; }
+    #preview { background: #fff; border: 1px dashed #dadce0; border-radius: 12px; padding: 20px; min-height: 300px; }
+    textarea { width: 100%; box-sizing: border-box; min-height: 110px; font-family: monospace; font-size: 12px; padding: 10px; border-radius: 8px; border: 1px solid #dadce0; }
+    button.big { background: #1a73e8; color: #fff; border: none; border-radius: 8px; padding: 10px 14px; cursor: pointer; }
+    button.ghost { background: #fff; border: 1px solid #dadce0; border-radius: 8px; padding: 10px 14px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="top"><b>KommentarG</b> · montar widget · estilo Elfsight / ACF</div>
+  <div class="main">
+    <div class="panel">
+      <div class="group">
+        <h3>1 · Empresa</h3>
+        <label>Place ID (RG da empresa no Google)</label>
+        <input id="f-place" type="text" placeholder="ChIJ... (vazio = padrão Desata)" />
+        <small>Descobre no Finder do Google. Ex Desata já vem como padrão.</small>
+      </div>
+      <div class="group">
+        <h3>2 · Conteúdo</h3>
+        <div class="row">
+          <div><label>Máximo</label><input id="f-limit" type="number" min="1" max="20" value="6" /></div>
+          <div><label>Nota mínima</label><select id="f-min"><option value="0">Todas</option><option value="3">3+</option><option value="4">4+</option><option value="5" selected>5 apenas</option></select></div>
+        </div>
+        <label>Ordem</label>
+        <select id="f-sort"><option value="default">Do Google</option><option value="recent">Recentes</option><option value="highest">Maiores notas</option><option value="lowest">Menores notas</option></select>
+      </div>
+      <div class="group">
+        <h3>3 · Layout</h3>
+        <div class="row">
+          <div><label>Tipo</label><select id="f-layout"><option value="carousel">Carrossel</option><option value="grid">Grade</option></select></div>
+          <div><label>Autoplay (s, 0=off)</label><input id="f-auto" type="number" min="0" max="30" value="0" /></div>
+        </div>
+        <label class="check"><input id="f-header" type="checkbox" checked /> Mostrar título em cima</label>
+        <label>Título</label><input id="f-title" type="text" value="Avaliações" />
+        <label class="check"><input id="f-photos" type="checkbox" checked /> Fotos</label>
+        <label class="check"><input id="f-date" type="checkbox" checked /> Data</label>
+        <label class="check"><input id="f-arrows" type="checkbox" checked /> Setas</label>
+        <label class="check"><input id="f-dots" type="checkbox" checked /> Bolinhas</label>
+      </div>
+      <div class="group">
+        <h3>4 · Aparência</h3>
+        <label>Tema</label>
+        <select id="f-theme"><option value="auto">Automático (segue o site)</option><option value="light">Claro</option><option value="dark">Escuro</option></select>
+        <div class="row">
+          <div><label>Fundo</label><input id="f-bg" type="text" placeholder="transparent ou #fff" /></div>
+          <div><label>Texto</label><input id="f-text" type="text" placeholder="#202124" /></div>
+        </div>
+        <div class="row">
+          <div><label>Estrelas</label><input id="f-stars" type="text" placeholder="#FBBC04" value="#FBBC04" /></div>
+          <div><label>Raio</label><input id="f-radius" type="text" placeholder="12px" value="12px" /></div>
+        </div>
+      </div>
+      <div class="row">
+        <button class="big" onclick="build(true)">Atualizar</button>
+        <button class="ghost" onclick="copy()">Copiar código</button>
+      </div>
+    </div>
+    <div>
+      <div class="panel">
+        <h3 style="margin-top:0">Pré-visualização</h3>
+        <div id="preview"><div id="kommentarg"></div></div>
+      </div>
+      <div class="panel" style="margin-top:12px">
+        <h3 style="margin-top:0">Código para colar no site</h3>
+        <textarea id="code" readonly></textarea>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function v(id) { return document.getElementById(id).value.trim(); }
+    function c(id) { return document.getElementById(id).checked ? '1' : '0'; }
+    function build() {
+      var attrs = {
+        'data-api': location.origin + '/api/reviews',
+        'data-place': v('f-place'),
+        'data-limit': v('f-limit') || '6',
+        'data-min-stars': document.getElementById('f-min').value,
+        'data-sort': document.getElementById('f-sort').value,
+        'data-layout': document.getElementById('f-layout').value,
+        'data-autoplay': v('f-auto') || '0',
+        'data-show-header': c('f-header'),
+        'data-title': v('f-title') || 'Avaliações',
+        'data-show-photos': c('f-photos'),
+        'data-show-date': c('f-date'),
+        'data-show-arrows': c('f-arrows'),
+        'data-show-dots': c('f-dots'),
+        'data-theme': document.getElementById('f-theme').value,
+        'data-bg': v('f-bg'), 'data-text': v('f-text'),
+        'data-stars': v('f-stars'), 'data-radius': v('f-radius')
+      };
+      // preview: recria o widget
+      document.getElementById('kommentarg').innerHTML = '';
+      document.querySelectorAll('script[data-kg]').forEach(function (e) { e.remove(); });
+      var sc = document.createElement('script');
+      sc.setAttribute('data-kg', '1');
+      sc.src = '/widget.js';
+      Object.keys(attrs).forEach(function (k) { if (attrs[k] !== '') sc.setAttribute(k, attrs[k]); });
+      document.getElementById('preview').appendChild(sc);
+
+      // código final com URL absoluta
+      var lines = ['<div id="kommentarg"></div>', '<script src="' + location.origin + '/widget.js"'];
+      Object.keys(attrs).forEach(function (k) {
+        if (k === 'data-api') return;
+        if (attrs[k] === '') return;
+        lines[lines.length - 1] += '\n  ' + k + '="' + attrs[k].replace(/"/g, '&quot;') + '"';
+      });
+      lines[lines.length - 1] += '\n  data-api="' + location.origin + '/api/reviews">';
+      lines.push('<\/script>');
+      document.getElementById('code').value = lines.join('\n');
+      try { localStorage.setItem('kg-admin', JSON.stringify(attrs)); } catch (e) {}
+    }
+    function copy() {
+      var t = document.getElementById('code');
+      t.select(); document.execCommand('copy');
+      if (navigator.clipboard) navigator.clipboard.writeText(t.value);
+      alert('Código copiado! Cole no seu site.');
+    }
+    (function restore() {
+      try {
+        var s = JSON.parse(localStorage.getItem('kg-admin') || '{}');
+        if (s['data-place']) document.getElementById('f-place').value = s['data-place'];
+      } catch (e) {}
+    })();
+    ['f-place','f-limit','f-min','f-sort','f-layout','f-auto','f-title','f-theme','f-bg','f-text','f-stars','f-radius'].forEach(function (id) {
+      document.getElementById(id).addEventListener('change', function(){ build(); });
+    });
+    ['f-header','f-photos','f-date','f-arrows','f-dots'].forEach(function (id) {
+      document.getElementById(id).addEventListener('change', function(){ build(); });
+    });
+    build();
+  </script>
+</body>
+</html>
