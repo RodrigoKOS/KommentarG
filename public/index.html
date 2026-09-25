@@ -39,12 +39,6 @@
   <h1>KommentarG - Teste visual</h1>
   <p id="info">Carregando...</p>
 
-  <div id="ai-box" style="border:1px solid rgba(127,127,127,.3);border-radius:12px;padding:14px 16px;margin:12px 0;">
-    <b>✨ Resumo IA (DeepSeek)</b>
-    <p id="ai-text" style="margin:8px 0 0;">Carregando resumo...</p>
-    <small id="ai-mode" style="opacity:.7"></small>
-  </div>
-
   <div class="toolbar">
     <button onclick="document.body.classList.remove('dark-demo')">Site claro</button>
     <button onclick="document.body.classList.add('dark-demo')">Site escuro</button>
@@ -62,11 +56,6 @@
     <button class="kg-arrow kg-next" id="next" aria-label="Próximo">›</button>
     <div class="kg-dots" id="dots"></div>
   </div>
-
-  <h2>Como usar no seu site (adapta sozinho)</h2>
-  <pre><code>&lt;div id="kommentarg"&gt;&lt;/div&gt;
-&lt;script src="/widget.js" data-api="/api/reviews"&gt;&lt;/script&gt;</code></pre>
-  <p>Para forçar: <code>data-theme="light"</code> ou <code>data-theme="dark"</code>, <code>data-bg="transparent"</code>, <code>data-text="#..."</code></p>
 
   <script>
     function esc(s) { return String(s||'').replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
@@ -158,26 +147,9 @@
     function loadClient() {
       var p = document.getElementById('place').value.trim();
       loadReviews(p);
-      var su = '/api/summary' + (p ? '?place=' + encodeURIComponent(p) : '');
-      fetch(su)
-        .then(function(r){ return r.json(); })
-        .then(function(d){
-          document.getElementById('ai-text').textContent = d.summary || 'Sem resumo.';
-          document.getElementById('ai-mode').textContent = d.mode || '';
-        })
-        .catch(function(){});
     }
 
     loadReviews('');
-
-    // Resumo IA via DeepSeek (padrão)
-    fetch('/api/summary')
-      .then(function(r){ return r.json(); })
-      .then(function(d){
-        document.getElementById('ai-text').textContent = d.summary || 'Sem chave DeepSeek — coloque DEEPSEEK_API_KEY no .env para ativar o resumo IA.';
-        document.getElementById('ai-mode').textContent = d.mode || '';
-      })
-      .catch(function(){ document.getElementById('ai-text').textContent = 'Resumo indisponível.'; });
   </script>
 </body>
 </html>
