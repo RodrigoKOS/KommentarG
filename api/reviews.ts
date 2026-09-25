@@ -86,7 +86,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const data: any = await r.json();
-    const reviews = (data.reviews || []).map((rv: any, i: number) => ({
+    let reviews = (data.reviews || []).map((rv: any, i: number) => ({
       id: String(i + 1),
       author: rv.authorAttribution?.displayName || 'Anônimo',
       authorPhoto: rv.authorAttribution?.photoUri || '',
@@ -97,6 +97,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       relativeTime: rv.relativePublishTimeDescription || '',
       source: 'google-places'
     }));
+
+    // Sempre prioriza recentes e bem avaliados (padrão: 4+ estrelas, mais novos primeiro).
+    // Dá para mudar por ?minStars=0&sort=default&limit=10
+    const qMin = Array.isArray(req.query.minStars) ? req.query.minStars[0] : req.query.minStars;
+    const qSort = Array.isArray(req.query.sort) ? req.query.sort[0] : req.query.sort;
+    const qLim = Array.isArray(req.query.limit) ? req.query.limit[0] : req.query.limit;
+    const minStars = qMin === undefined || qMin === '' ? 4 : parseInt(String(qMin), 10) || 0;
+    const sortMode = typeof qSort === 'string' && qSort ? qSort : 'recent';
+    const lim = qLim === undefined || qLim === '' ? 10 : parseInt(String(qLim), 10) || 10;
+
+    reviews = reviews.filter((r: any) => (r.stars || 0) >= minStars);
+    if (sortMode === 'highest') reviews.sort((a: any, b: any) => (b.stars || 0) - (a.stars || 0));
+    else if (sortMode === 'lowest') reviews.sort((a: any, b: any) => (a.stars || 0) - (b.stars || 0));
+    else if (sortMode === 'recent') reviews.sort((a: any, b: any) => String(b.date || '') < String(a.date || '') ? -1 : 1);
+    reviews = reviews.slice(0, lim);
+    reviews.forEach((r: any, i: number) => { r.id = String(i + 1); });
 
     return res.status(200).json({
       business: data.displayName?.text || 'Empresa',

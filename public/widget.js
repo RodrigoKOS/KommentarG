@@ -22,8 +22,9 @@
   }
   var layout = attr('data-layout', 'carousel');
   var limit = parseInt(attr('data-limit', '10'), 10) || 10;
-  var minStars = parseInt(attr('data-min-stars', '0'), 10) || 0;
-  var sort = attr('data-sort', 'default');
+  var minStars = parseInt(attr('data-min-stars', '4'), 10);
+  if (isNaN(minStars)) minStars = 4;
+  var sort = attr('data-sort', 'recent');
   var theme = attr('data-theme', 'auto');
   var showPhotos = attr('data-show-photos', '1') !== '0';
   var showDate = attr('data-show-date', '1') !== '0';
