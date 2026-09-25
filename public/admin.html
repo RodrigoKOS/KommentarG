@@ -3,98 +3,262 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>KommentarG - Montar widget (estilo Elfsight / ACF)</title>
+  <title>KommentarG — Configurar widget</title>
   <style>
-    body { font-family: Arial, Helvetica, sans-serif; margin: 0; background: #f6f7f9; color: #202124; }
-    .top { background: #fff; border-bottom: 1px solid #e1e3e6; padding: 14px 20px; position: sticky; top: 0; z-index: 5; }
-    .main { display: grid; grid-template-columns: 360px 1fr; gap: 16px; padding: 16px 20px; max-width: 1200px; margin: 0 auto; }
-    @media (max-width: 900px) { .main { grid-template-columns: 1fr; } }
-    .panel { background: #fff; border: 1px solid #e1e3e6; border-radius: 12px; padding: 16px; }
-    .group { border: 1px solid #eef0f3; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
-    .group h3 { margin: 0 0 10px; font-size: 14px; text-transform: uppercase; letter-spacing: .04em; color: #5f6368; }
-    label { display: block; font-size: 13px; margin: 8px 0 4px; }
-    input[type=text], input[type=number], select { width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #dadce0; border-radius: 8px; }
-    .row { display: flex; gap: 8px; } .row > * { flex: 1; }
-    .check { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 14px; }
-    #preview { background: #fff; border: 1px dashed #dadce0; border-radius: 12px; padding: 20px; min-height: 300px; }
-    textarea { width: 100%; box-sizing: border-box; min-height: 110px; font-family: monospace; font-size: 12px; padding: 10px; border-radius: 8px; border: 1px solid #dadce0; }
-    button.big { background: #1a73e8; color: #fff; border: none; border-radius: 8px; padding: 10px 14px; cursor: pointer; }
-    button.ghost { background: #fff; border: 1px solid #dadce0; border-radius: 8px; padding: 10px 14px; cursor: pointer; }
+    :root {
+      --bg: #f4f5f7;
+      --surface: #ffffff;
+      --border: #e4e7ec;
+      --text: #101828;
+      --muted: #667085;
+      --primary: #155eef;
+      --primary-ink: #ffffff;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+    .top {
+      position: sticky; top: 0; z-index: 10;
+      background: rgba(255,255,255,.9);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+    }
+    .top-inner {
+      max-width: 1240px; margin: 0 auto; padding: 14px 24px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+    .brand-mark {
+      width: 30px; height: 30px; border-radius: 9px;
+      background: #101828; color: #fff;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .brand small { display: block; font-weight: 500; color: var(--muted); font-size: 12px; }
+    .top-actions { display: flex; gap: 8px; }
+    .btn {
+      border: 1px solid var(--border); background: var(--surface); color: var(--text);
+      border-radius: 10px; padding: 9px 14px; cursor: pointer; font-weight: 600; font-size: 14px;
+    }
+    .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+    .btn.primary { background: var(--primary); border-color: var(--primary); color: var(--primary-ink); }
+    .main {
+      max-width: 1240px; margin: 0 auto; padding: 20px 24px 40px;
+      display: grid; grid-template-columns: 380px 1fr; gap: 18px; align-items: start;
+    }
+    @media (max-width: 960px) { .main { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 18px;
+      box-shadow: 0 1px 2px rgba(16,24,40,.05);
+    }
+    .section { border-top: 1px solid var(--border); padding: 16px 0; }
+    .section:first-child { border-top: none; padding-top: 0; }
+    .section h2 {
+      margin: 0 0 4px; font-size: 12px; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .section p.desc { margin: 0 0 10px; font-size: 13px; color: var(--muted); }
+    label.field { display: block; font-size: 13px; font-weight: 600; margin: 12px 0 6px; }
+    input[type=text], input[type=number], select, textarea {
+      width: 100%; padding: 10px 12px; font-size: 14px;
+      border: 1px solid #d0d5dd; border-radius: 10px; background: #fff; color: var(--text);
+    }
+    input:focus, select:focus, textarea:focus { outline: 2px solid rgba(21,94,239,.35); border-color: var(--primary); }
+    .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .segmented { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .segmented label {
+      border: 1px solid #d0d5dd; border-radius: 10px; padding: 10px;
+      text-align: center; cursor: pointer; font-size: 14px; font-weight: 600; margin: 0;
+    }
+    .segmented input { position: absolute; opacity: 0; pointer-events: none; }
+    .segmented input:checked + span { font-weight: 700; }
+    .segmented label:has(input:checked) { border-color: var(--primary); background: #eff4ff; color: #0b3dbd; }
+    .switch { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 0; font-size: 14px; }
+    .switch input { width: 40px; height: 22px; accent-color: var(--primary); }
+    .preview-wrap { position: sticky; top: 76px; }
+    @media (max-width: 960px) { .preview-wrap { position: static; } }
+    .preview-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .preview-head h2 { margin: 0; font-size: 16px; }
+    .view-toggle { display: flex; gap: 6px; }
+    #preview { border: 1px dashed #cfd4dc; border-radius: 12px; padding: 22px; background: #fff; min-height: 320px; }
+    #preview.dark { background: #131314; color: #e8eaed; }
+    textarea#code { min-height: 130px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+    .color-row { display: grid; grid-template-columns: 36px 1fr; gap: 8px; align-items: center; }
+    input[type=color] { width: 36px; height: 36px; border: 1px solid #d0d5dd; border-radius: 9px; padding: 2px; background: #fff; }
   </style>
 </head>
 <body>
-  <div class="top"><b>KommentarG</b> · montar widget · estilo Elfsight / ACF</div>
-  <div class="main">
-    <div class="panel">
-      <div class="group">
-        <h3>1 · Empresa</h3>
-        <label>Place ID (RG da empresa no Google)</label>
-        <input id="f-place" type="text" placeholder="ChIJ... (vazio = padrão Desata)" />
-        <small>Descobre no Finder do Google. Ex Desata já vem como padrão.</small>
+  <header class="top">
+    <div class="top-inner">
+      <div class="brand">
+        <span class="brand-mark">K</span>
+        <span>KommentarG<small>Configurar widget de avaliações</small></span>
       </div>
-      <div class="group">
-        <h3>2 · Conteúdo</h3>
-        <div class="row">
-          <div><label>Máximo</label><input id="f-limit" type="number" min="1" max="20" value="6" /></div>
-          <div><label>Nota mínima</label><select id="f-min"><option value="0">Todas</option><option value="3">3+</option><option value="4" selected>4+ (falam bem)</option><option value="5">5 apenas</option></select></div>
-        </div>
-        <label>Ordem</label>
-        <select id="f-sort"><option value="recent" selected>Mais recentes e bem avaliados</option><option value="default">Do Google</option><option value="highest">Maiores notas</option><option value="lowest">Menores notas</option></select>
-      </div>
-      <div class="group">
-        <h3>3 · Layout</h3>
-        <div class="row">
-          <div><label>Tipo</label><select id="f-layout"><option value="carousel">Carrossel</option><option value="grid">Grade</option></select></div>
-          <div><label>Autoplay (s, 0=off)</label><input id="f-auto" type="number" min="0" max="30" value="0" /></div>
-        </div>
-        <label class="check"><input id="f-header" type="checkbox" checked /> Mostrar título em cima</label>
-        <label>Título</label><input id="f-title" type="text" value="Avaliações" />
-        <label class="check"><input id="f-photos" type="checkbox" checked /> Fotos</label>
-        <label class="check"><input id="f-date" type="checkbox" checked /> Data</label>
-        <label class="check"><input id="f-arrows" type="checkbox" checked /> Setas</label>
-        <label class="check"><input id="f-dots" type="checkbox" checked /> Bolinhas</label>
-      </div>
-      <div class="group">
-        <h3>4 · Aparência</h3>
-        <label>Tema</label>
-        <select id="f-theme"><option value="auto">Automático (segue o site)</option><option value="light">Claro</option><option value="dark">Escuro</option></select>
-        <div class="row">
-          <div><label>Fundo</label><input id="f-bg" type="text" placeholder="transparent ou #fff" /></div>
-          <div><label>Texto</label><input id="f-text" type="text" placeholder="#202124" /></div>
-        </div>
-        <div class="row">
-          <div><label>Estrelas</label><input id="f-stars" type="text" placeholder="#FBBC04" value="#FBBC04" /></div>
-          <div><label>Raio</label><input id="f-radius" type="text" placeholder="12px" value="12px" /></div>
-        </div>
-      </div>
-      <div class="row">
-        <button class="big" onclick="build(true)">Atualizar</button>
-        <button class="ghost" onclick="copy()">Copiar código</button>
+      <div class="top-actions">
+        <button class="btn" id="btn-preview-light">Pré-visualizar claro</button>
+        <button class="btn" id="btn-preview-dark">Pré-visualizar escuro</button>
+        <button class="btn primary" id="btn-copy-top">Copiar código</button>
       </div>
     </div>
-    <div>
-      <div class="panel">
-        <h3 style="margin-top:0">Pré-visualização</h3>
+  </header>
+
+  <main class="main">
+    <section class="card" aria-label="Configurações">
+      <div class="section">
+        <h2>Empresa</h2>
+        <p class="desc">Qual avaliação mostrar. Vazio usa o padrão.</p>
+        <label class="field" for="f-place">Place ID</label>
+        <input id="f-place" type="text" placeholder="ChIJ... (vazio = padrão Desata)" autocomplete="off" />
+        <div class="hint">Encontre no Localizador de Place ID do Google Maps.</div>
+      </div>
+
+      <div class="section">
+        <h2>Conteúdo</h2>
+        <p class="desc">Filtro de qualidade e ordem. O padrão prioriza recentes e bem avaliados.</p>
+        <div class="grid2">
+          <div>
+            <label class="field" for="f-limit">Máximo</label>
+            <input id="f-limit" type="number" min="1" max="20" value="6" />
+          </div>
+          <div>
+            <label class="field" for="f-min">Nota mínima</label>
+            <select id="f-min">
+              <option value="0">Todas</option>
+              <option value="3">3+</option>
+              <option value="4" selected>4+ (recomendado)</option>
+              <option value="5">Somente 5</option>
+            </select>
+          </div>
+        </div>
+        <label class="field" for="f-sort">Ordem</label>
+        <select id="f-sort">
+          <option value="recent" selected>Mais recentes primeiro</option>
+          <option value="highest">Maior nota</option>
+          <option value="lowest">Menor nota</option>
+          <option value="default">Ordem do Google</option>
+        </select>
+      </div>
+
+      <div class="section">
+        <h2>Layout</h2>
+        <label class="field">Apresentação</label>
+        <div class="segmented" role="radiogroup" aria-label="Tipo de layout">
+          <label><input type="radio" name="layout" value="carousel" checked /><span>Carrossel</span></label>
+          <label><input type="radio" name="layout" value="grid" /><span>Grade</span></label>
+        </div>
+        <div class="grid2">
+          <div>
+            <label class="field" for="f-auto">Autoplay (seg)</label>
+            <input id="f-auto" type="number" min="0" max="30" value="0" />
+          </div>
+          <div>
+            <label class="field" for="f-title">Título</label>
+            <input id="f-title" type="text" value="Avaliações" />
+          </div>
+        </div>
+        <div class="switch"><span>Cabeçalho com nota</span><input id="f-header" type="checkbox" checked /></div>
+        <div class="switch"><span>Fotos dos autores</span><input id="f-photos" type="checkbox" checked /></div>
+        <div class="switch"><span>Data da avaliação</span><input id="f-date" type="checkbox" checked /></div>
+        <div class="switch"><span>Setas de navegação</span><input id="f-arrows" type="checkbox" checked /></div>
+        <div class="switch"><span>Bolinhas de página</span><input id="f-dots" type="checkbox" checked /></div>
+      </div>
+
+      <div class="section">
+        <h2>Aparência</h2>
+        <label class="field" for="f-theme">Tema</label>
+        <select id="f-theme">
+          <option value="auto" selected>Automático (herda o site)</option>
+          <option value="light">Claro</option>
+          <option value="dark">Escuro</option>
+        </select>
+        <div class="grid2">
+          <div>
+            <label class="field" for="f-bg">Fundo do cartão</label>
+            <div class="color-row">
+              <input id="f-bg-color" type="color" value="#f1f3f4" aria-label="Cor de fundo" />
+              <input id="f-bg" type="text" placeholder="transparent ou #f1f3f4" />
+            </div>
+          </div>
+          <div>
+            <label class="field" for="f-text">Cor do texto</label>
+            <div class="color-row">
+              <input id="f-text-color" type="color" value="#202124" aria-label="Cor do texto" />
+              <input id="f-text" type="text" placeholder="herdado do site" />
+            </div>
+          </div>
+        </div>
+        <div class="grid2">
+          <div>
+            <label class="field" for="f-stars">Cor das estrelas</label>
+            <div class="color-row">
+              <input id="f-stars-color" type="color" value="#FBBC04" aria-label="Cor das estrelas" />
+              <input id="f-stars" type="text" value="#FBBC04" />
+            </div>
+          </div>
+          <div>
+            <label class="field" for="f-radius">Cantos</label>
+            <select id="f-radius">
+              <option value="8px">Suave</option>
+              <option value="12px" selected>Padrão</option>
+              <option value="18px">Arredondado</option>
+              <option value="999px">Pílula</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="card preview-wrap">
+        <div class="preview-head">
+          <h2>Pré-visualização ao vivo</h2>
+          <span class="hint" id="preview-status">Atualiza a cada ajuste</span>
+        </div>
         <div id="preview"><div id="kommentarg"></div></div>
       </div>
-      <div class="panel" style="margin-top:12px">
-        <h3 style="margin-top:0">Código para colar no site</h3>
-        <textarea id="code" readonly></textarea>
+
+      <div class="card" style="margin-top:14px">
+        <div class="preview-head">
+          <h2>Instalar no site</h2>
+          <button class="btn primary" id="btn-copy">Copiar</button>
+        </div>
+        <p class="hint">Cole antes de <code>&lt;/body&gt;</code>. Funciona em WordPress (bloco HTML), Shopify, Wix e HTML puro.</p>
+        <textarea id="code" readonly spellcheck="false"></textarea>
       </div>
-    </div>
-  </div>
+    </section>
+  </main>
 
   <script>
     function v(id) { return document.getElementById(id).value.trim(); }
     function c(id) { return document.getElementById(id).checked ? '1' : '0'; }
+    function layoutVal() {
+      var el = document.querySelector('input[name="layout"]:checked');
+      return el ? el.value : 'carousel';
+    }
+    function syncColor(textId, colorId) {
+      var t = document.getElementById(textId), p = document.getElementById(colorId);
+      if (!t || !p) return;
+      if (/^#[0-9a-fA-F]{6}$/.test(t.value.trim())) p.value = t.value.trim();
+    }
     function build() {
+      syncColor('f-bg', 'f-bg-color'); syncColor('f-text', 'f-text-color'); syncColor('f-stars', 'f-stars-color');
+      var status = document.getElementById('preview-status');
+      if (status) status.textContent = 'Atualizando...';
       var attrs = {
         'data-api': location.origin + '/api/reviews',
         'data-place': v('f-place'),
         'data-limit': v('f-limit') || '6',
         'data-min-stars': document.getElementById('f-min').value,
         'data-sort': document.getElementById('f-sort').value,
-        'data-layout': document.getElementById('f-layout').value,
+        'data-layout': layoutVal(),
         'data-autoplay': v('f-auto') || '0',
         'data-show-header': c('f-header'),
         'data-title': v('f-title') || 'Avaliações',
@@ -104,18 +268,18 @@
         'data-show-dots': c('f-dots'),
         'data-theme': document.getElementById('f-theme').value,
         'data-bg': v('f-bg'), 'data-text': v('f-text'),
-        'data-stars': v('f-stars'), 'data-radius': v('f-radius')
+        'data-stars': v('f-stars'), 'data-radius': document.getElementById('f-radius').value
       };
-      // preview: recria o widget
-      document.getElementById('kommentarg').innerHTML = '';
+      var holder = document.getElementById('kommentarg');
+      if (holder) holder.innerHTML = '';
       document.querySelectorAll('script[data-kg]').forEach(function (e) { e.remove(); });
       var sc = document.createElement('script');
       sc.setAttribute('data-kg', '1');
       sc.src = '/widget.js';
       Object.keys(attrs).forEach(function (k) { if (attrs[k] !== '') sc.setAttribute(k, attrs[k]); });
+      sc.onload = function () { if (status) status.textContent = 'Prévia atualizada'; };
       document.getElementById('preview').appendChild(sc);
 
-      // código final com URL absoluta
       var lines = ['<div id="kommentarg"></div>', '<script src="' + location.origin + '/widget.js"'];
       Object.keys(attrs).forEach(function (k) {
         if (k === 'data-api') return;
@@ -129,22 +293,44 @@
     }
     function copy() {
       var t = document.getElementById('code');
-      t.select(); document.execCommand('copy');
+      t.select();
+      try { document.execCommand('copy'); } catch (e) {}
       if (navigator.clipboard) navigator.clipboard.writeText(t.value);
-      alert('Código copiado! Cole no seu site.');
     }
+    document.getElementById('btn-copy').addEventListener('click', copy);
+    document.getElementById('btn-copy-top').addEventListener('click', copy);
+    document.getElementById('btn-preview-light').addEventListener('click', function () {
+      document.getElementById('preview').classList.remove('dark');
+    });
+    document.getElementById('btn-preview-dark').addEventListener('click', function () {
+      document.getElementById('preview').classList.add('dark');
+    });
+    ['f-bg-color', 'f-text-color', 'f-stars-color'].forEach(function (id) {
+      document.getElementById(id).addEventListener('input', function (e) {
+        var map = { 'f-bg-color': 'f-bg', 'f-text-color': 'f-text', 'f-stars-color': 'f-stars' };
+        document.getElementById(map[id]).value = e.target.value;
+        build();
+      });
+    });
+    ['f-place','f-limit','f-min','f-sort','f-auto','f-title','f-theme','f-bg','f-text','f-stars','f-radius'].forEach(function (id) {
+      document.getElementById(id).addEventListener('change', build);
+      document.getElementById(id).addEventListener('input', function () {
+        clearTimeout(window.__kgT); window.__kgT = setTimeout(build, 350);
+      });
+    });
+    ['f-header','f-photos','f-date','f-arrows','f-dots'].forEach(function (id) {
+      document.getElementById(id).addEventListener('change', build);
+    });
+    document.querySelectorAll('input[name="layout"]').forEach(function (el) {
+      el.addEventListener('change', build);
+    });
     (function restore() {
       try {
         var s = JSON.parse(localStorage.getItem('kg-admin') || '{}');
         if (s['data-place']) document.getElementById('f-place').value = s['data-place'];
+        if (s['data-limit']) document.getElementById('f-limit').value = s['data-limit'];
       } catch (e) {}
     })();
-    ['f-place','f-limit','f-min','f-sort','f-layout','f-auto','f-title','f-theme','f-bg','f-text','f-stars','f-radius'].forEach(function (id) {
-      document.getElementById(id).addEventListener('change', function(){ build(); });
-    });
-    ['f-header','f-photos','f-date','f-arrows','f-dots'].forEach(function (id) {
-      document.getElementById(id).addEventListener('change', function(){ build(); });
-    });
     build();
   </script>
 </body>
