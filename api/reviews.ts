@@ -28,22 +28,43 @@ const MOCK_REVIEWS = [
 
 function mockResponse(res: VercelResponse) {
   return res.status(200).json({
-    business: 'Desata Estúdio Design',
+    business: 'Empresa Exemplo',
     rating: 5,
-    total: 10,
-    mode: 'mock - coloque GOOGLE_MAPS_API_KEY e GOOGLE_PLACE_ID na Vercel para dados reais',
+    total: MOCK_REVIEWS.length,
+    mode: 'mock - coloque GOOGLE_MAPS_API_KEY na Vercel para dados reais. Use ?place=SEU_PLACE_ID',
     reviews: MOCK_REVIEWS
   });
+}
+
+function getPlaceId(req: VercelRequest): string {
+  const q = req.query.place || req.query.id || req.query.placeId;
+  const fromQuery = Array.isArray(q) ? q[0] : q;
+  if (typeof fromQuery === 'string' && fromQuery.startsWith('ChIJ')) {
+    return fromQuery;
+  }
+  return process.env.GOOGLE_PLACE_ID || '';
+}
+
+function isAllowed(placeId: string): boolean {
+  const list = process.env.GOOGLE_ALLOWED_PLACES;
+  if (!list) return true; // sem lista = aceita qualquer um (modo simples para começar)
+  const allowed = list.split(',').map((s) => s.trim()).filter(Boolean);
+  if (allowed.length === 0) return true;
+  return allowed.includes(placeId);
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
-  const placeId = process.env.GOOGLE_PLACE_ID;
+  const placeId = getPlaceId(req);
 
   if (!apiKey || !placeId) {
     return mockResponse(res);
+  }
+
+  if (!isAllowed(placeId)) {
+    return res.status(403).json({ error: 'Esse cliente não está liberado. Adicione o Place ID em GOOGLE_ALLOWED_PLACES na Vercel.' });
   }
 
   if (req.query.mock === 'true') {

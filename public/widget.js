@@ -11,6 +11,10 @@
 (function () {
   var s = document.currentScript;
   var api = (s && s.getAttribute('data-api')) || '/api/reviews';
+  var place = s && s.getAttribute('data-place');
+  if (place && api.indexOf('place=') === -1) {
+    api += (api.indexOf('?') === -1 ? '?' : '&') + 'place=' + encodeURIComponent(place);
+  }
   var theme = (s && s.getAttribute('data-theme')) || 'auto';
   var box = document.getElementById('kommentarg');
   if (!box) return;

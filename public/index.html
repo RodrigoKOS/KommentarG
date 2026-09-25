@@ -39,9 +39,21 @@
   <h1>KommentarG - Teste visual</h1>
   <p id="info">Carregando...</p>
 
+  <div id="ai-box" style="border:1px solid rgba(127,127,127,.3);border-radius:12px;padding:14px 16px;margin:12px 0;">
+    <b>✨ Resumo IA (DeepSeek)</b>
+    <p id="ai-text" style="margin:8px 0 0;">Carregando resumo...</p>
+    <small id="ai-mode" style="opacity:.7"></small>
+  </div>
+
   <div class="toolbar">
     <button onclick="document.body.classList.remove('dark-demo')">Site claro</button>
     <button onclick="document.body.classList.add('dark-demo')">Site escuro</button>
+  </div>
+
+  <div class="toolbar">
+    <input id="place" placeholder="Place ID do cliente (ex: ChIJ...)" style="flex:1;min-width:220px;padding:8px 12px;border:1px solid #dadce0;border-radius:20px" />
+    <button onclick="loadClient()">Testar cliente</button>
+    <button onclick="document.getElementById('place').value='';loadClient()">Padrão</button>
   </div>
 
   <div class="kg-wrap">
@@ -115,7 +127,10 @@
     document.getElementById('next').addEventListener('click', function(){ if(page<maxPage()){page++;update();} });
     window.addEventListener('resize', function(){ page=Math.min(page,maxPage()); update(); });
 
-    fetch('/api/reviews')
+    function loadReviews(placeId) {
+      var url = '/api/reviews' + (placeId ? '?place=' + encodeURIComponent(placeId) : '');
+      document.getElementById('lista').innerHTML = 'Carregando...';
+      fetch(url)
       .then(function(r){ return r.json(); })
       .then(function(d){
         document.getElementById('info').innerHTML = '<b>' + esc(d.business) + ' - ' + d.rating + ' estrelas (' + d.total + ')</b> - ' + esc(d.mode);
@@ -138,6 +153,31 @@
         page=0; update();
       })
       .catch(function(){ document.getElementById('lista').innerHTML = 'Erro ao carregar API'; });
+    }
+
+    function loadClient() {
+      var p = document.getElementById('place').value.trim();
+      loadReviews(p);
+      var su = '/api/summary' + (p ? '?place=' + encodeURIComponent(p) : '');
+      fetch(su)
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          document.getElementById('ai-text').textContent = d.summary || 'Sem resumo.';
+          document.getElementById('ai-mode').textContent = d.mode || '';
+        })
+        .catch(function(){});
+    }
+
+    loadReviews('');
+
+    // Resumo IA via DeepSeek (padrão)
+    fetch('/api/summary')
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        document.getElementById('ai-text').textContent = d.summary || 'Sem chave DeepSeek — coloque DEEPSEEK_API_KEY no .env para ativar o resumo IA.';
+        document.getElementById('ai-mode').textContent = d.mode || '';
+      })
+      .catch(function(){ document.getElementById('ai-text').textContent = 'Resumo indisponível.'; });
   </script>
 </body>
 </html>
