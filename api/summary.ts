@@ -13,9 +13,18 @@ const MOCK_REVIEWS = [
   { author: 'Josefran Zumba', stars: 5, text: 'Sem dúvidas a melhor da região. Pessoal comprometido com o trabalho e atenciosos.' },
 ];
 
-async function getGoogleReviews() {
+async function getGoogleReviews(req?: VercelRequest) {
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
-  const placeId = process.env.GOOGLE_PLACE_ID;
+  const q: any = req?.query?.place || req?.query?.id || req?.query?.placeId;
+  const fromQuery = Array.isArray(q) ? q[0] : q;
+  const placeId = (typeof fromQuery === 'string' && fromQuery.startsWith('ChIJ')) ? fromQuery : process.env.GOOGLE_PLACE_ID;
+  const allowed = process.env.GOOGLE_ALLOWED_PLACES;
+  if (placeId && allowed) {
+    const list = allowed.split(',').map((s) => s.trim()).filter(Boolean);
+    if (list.length && !list.includes(placeId)) {
+      throw new Error('Esse cliente não está liberado em GOOGLE_ALLOWED_PLACES.');
+    }
+  }
   if (!apiKey || !placeId) {
     return { business: 'Desata Estúdio Design', rating: 5, total: 10, reviews: MOCK_REVIEWS, mode: 'mock' };
   }
@@ -107,7 +116,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // GET: busca do Google e resume
-    const data = await getGoogleReviews();
+    const data = await getGoogleReviews(req);
     const out = await summarizeWithDeepSeek(data.business, data.rating, data.reviews);
     return res.status(200).json({
       business: data.business,
