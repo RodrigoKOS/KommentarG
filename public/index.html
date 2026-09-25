@@ -5,41 +5,62 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>KommentarG - Teste</title>
   <style>
-    body { font-family: Arial, Helvetica, sans-serif; max-width: 760px; margin: 32px auto; padding: 0 20px; background: #fff; color: #202124; }
-    .kg-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
-    .kg-card { background: #f1f3f4; border-radius: 12px; padding: 16px 18px; }
+    body { font-family: Arial, Helvetica, sans-serif; max-width: 1100px; margin: 32px auto; padding: 0 20px; background: #fff; color: #202124; }
+    .kg-wrap { position: relative; }
+    .kg-viewport { overflow: hidden; }
+    .kg-track { display: flex; gap: 16px; transition: transform 0.35s ease; }
+    .kg-card { background: #f1f3f4; border-radius: 12px; padding: 16px 18px; flex: 0 0 100%; box-sizing: border-box; }
+    @media (min-width: 640px) { .kg-card { flex-basis: calc(50% - 8px); } }
+    @media (min-width: 1024px) { .kg-card { flex-basis: calc(33.333% - 11px); } }
     .kg-head { display: flex; gap: 10px; align-items: center; }
-    .kg-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; background: #dadce0; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #5f6368; flex-shrink: 0; }
-    .kg-name { font-weight: bold; font-size: 15px; display: flex; align-items: center; gap: 5px; }
-    .kg-check { width: 16px; height: 16px; }
+    .kg-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; background: #dadce0; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #fff; flex-shrink: 0; font-size: 20px; }
+    .kg-name { font-weight: bold; font-size: 15px; display: flex; align-items: center; gap: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
     .kg-sub { display: flex; align-items: center; gap: 5px; color: #5f6368; font-size: 13px; margin-top: 2px; }
     .kg-g { width: 18px; height: 18px; }
     .kg-stars { color: #FBBC04; font-size: 20px; letter-spacing: 2px; margin: 8px 0 6px; }
-    .kg-text { font-size: 15px; line-height: 1.45; margin: 0; }
-    .kg-more { color: #1a73e8; cursor: pointer; font-size: 15px; text-decoration: none; background: none; border: none; padding: 0; }
+    .kg-text { font-size: 15px; line-height: 1.45; margin: 0; min-height: 66px; }
+    .kg-more { color: #1a73e8; cursor: pointer; font-size: 15px; background: none; border: none; padding: 0; }
+    .kg-arrow { position: absolute; top: 40%; width: 36px; height: 36px; border-radius: 50%; border: none; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.2); cursor: pointer; font-size: 22px; line-height: 1; z-index: 2; }
+    .kg-prev { left: -12px; }
+    .kg-next { right: -12px; }
+    .kg-arrow:disabled { opacity: 0.3; }
+    .kg-dots { display: flex; gap: 6px; justify-content: center; margin-top: 14px; }
+    .kg-dot { width: 6px; height: 6px; border-radius: 50%; background: #dadce0; border: none; padding: 0; cursor: pointer; }
+    .kg-dot.on { background: #202124; width: 7px; height: 7px; }
   </style>
 </head>
 <body>
   <h1>KommentarG - Teste visual</h1>
   <p id="info">Carregando...</p>
-  <div id="lista" class="kg-grid">Carregando...</div>
+  <div class="kg-wrap">
+    <button class="kg-arrow kg-prev" id="prev" aria-label="Anterior">‹</button>
+    <div class="kg-viewport"><div class="kg-track" id="lista"></div></div>
+    <button class="kg-arrow kg-next" id="next" aria-label="Próximo">›</button>
+    <div class="kg-dots" id="dots"></div>
+  </div>
 
   <script>
     function esc(s) { return String(s||'').replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+    function bgFor(name) {
+      var colors = ['#0F9D58','#1976D2','#7B1FA2','#00838F','#3E2723'];
+      var h = 0; var s = String(name||'A');
+      for (var i=0;i<s.length;i++) h = (h*31 + s.charCodeAt(i)) % 997;
+      return colors[h % colors.length];
+    }
     function avatar(r) {
       if (r.authorPhoto) return '<img class="kg-avatar" src="' + esc(r.authorPhoto) + '" alt="" />';
       var initial = esc((r.author||'A').trim().charAt(0).toUpperCase());
-      return '<div class="kg-avatar">' + initial + '</div>';
+      return '<div class="kg-avatar" style="background:' + bgFor(r.author) + '">' + initial + '</div>';
     }
     function card(r) {
       var full = esc(r.text||'');
-      var short = full.length > 140 ? full.slice(0, 140) + '...' : full;
-      var needMore = full.length > 140;
+      var short = full.length > 120 ? full.slice(0, 120) + '...' : full;
+      var needMore = full.length > 120;
       var stars = '★'.repeat(r.stars||0) + '☆'.repeat(5-(r.stars||0));
       return '<div class="kg-card">' +
         '<div class="kg-head">' + avatar(r) +
-          '<div><div class="kg-name">' + esc(r.author||'Anônimo') +
-            '<svg class="kg-check" viewBox="0 0 24 24" fill="#1a73e8"><path d="M12 2l2.4 2.4 3.4-.5.9 3.3 3 1.7-1.4 3.1 1.4 3.1-3 1.7-.9 3.3-3.4-.5L12 22l-2.4-2.4-3.4.5-.9-3.3-3-1.7L3.7 12 2.3 8.9l3-1.7.9-3.3 3.4.5z"/><path d="M10.6 14.6l-2.1-2.1-1.4 1.4 3.5 3.5 7-7-1.4-1.4z" fill="#fff"/></svg>' +
+          '<div style="min-width:0"><div class="kg-name">' + esc(r.author||'Anônimo') +
+            '<svg width="16" height="16" viewBox="0 0 24 24" fill="#1a73e8"><path d="M12 2l2.4 2.4 3.4-.5.9 3.3 3 1.7-1.4 3.1 1.4 3.1-3 1.7-.9 3.3-3.4-.5L12 22l-2.4-2.4-3.4.5-.9-3.3-3-1.7L3.7 12 2.3 8.9l3-1.7.9-3.3 3.4.5z"/><path d="M10.6 14.6l-2.1-2.1-1.4 1.4 3.5 3.5 7-7-1.4-1.4z" fill="#fff"/></svg>' +
           '</div>' +
           '<div class="kg-sub">' +
             '<svg class="kg-g" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.5 12.3c0-.9-.1-1.5-.3-2.3H12v4.3h6.5c-.1 1.1-.8 2.7-2.4 3.8l-.1.1 3.5 2.7.2.1c2.2-2 3.8-5 3.8-8.7z"/><path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.9-2.9l-3.8-2.9c-1 .7-2.4 1.2-4.1 1.2-3.1 0-5.8-2.1-6.8-5l-.1.1-3.6 2.8v.1C3.5 21.3 7.5 24 12 24z"/><path fill="#FBBC05" d="M5.2 14.4c-.2-.7-.4-1.5-.4-2.4s.1-1.7.4-2.4l-.1-.1-3.5-2.7-.1.1C.5 8.9 0 10.4 0 12s.5 3.1 1.5 4.5l3.7-2.1z"/><path fill="#EA4335" d="M12 4.7c1.8 0 3 .8 3.7 1.4l3.3-3.2C17.9 1.1 15.2 0 12 0 7.5 0 3.5 2.7 1.5 6.9l3.7 2.8c1-2.9 3.7-5 6.8-5z"/></svg>' +
@@ -51,16 +72,58 @@
         (needMore ? ' <button class="kg-more">Read more</button>' : '') + '</p>' +
       '</div>';
     }
+
+    var page = 0, total = 0;
+    function perView() { return window.innerWidth < 640 ? 1 : window.innerWidth < 1024 ? 2 : 3; }
+    function maxPage() { return Math.max(0, Math.ceil(total / perView()) - 1); }
+    function update() {
+      var track = document.getElementById('lista');
+      track.style.transform = 'translateX(-' + (page * 100) + '%)';
+      var dots = document.getElementById('dots');
+      dots.innerHTML = '';
+      for (var i=0;i<=maxPage();i++) {
+        (function(i){
+          var b = document.createElement('button');
+          b.className = 'kg-dot' + (i===page ? ' on' : '');
+          b.setAttribute('aria-label','Ir para '+ (i+1));
+          b.addEventListener('click', function(){ page=i; update(); });
+          dots.appendChild(b);
+        })(i);
+      }
+      document.getElementById('prev').disabled = page===0;
+      document.getElementById('next').disabled = page===maxPage();
+    }
+
+    document.getElementById('prev').addEventListener('click', function(){ if(page>0){page--;update();} });
+    document.getElementById('next').addEventListener('click', function(){ if(page<maxPage()){page++;update();} });
+    window.addEventListener('resize', function(){ page=Math.min(page,maxPage()); update(); });
+
+    // arrastar no celular
+    (function(){
+      var x0=null;
+      var vp=document.querySelector('.kg-viewport');
+      vp.addEventListener('touchstart',function(e){x0=e.touches[0].clientX;},{passive:true});
+      vp.addEventListener('touchend',function(e){
+        if(x0===null)return;
+        var dx=e.changedTouches[0].clientX-x0;
+        if(dx<-50 && page<maxPage()){page++;update();}
+        if(dx>50 && page>0){page--;update();}
+        x0=null;
+      },{passive:true});
+    })();
+
     fetch('/api/reviews')
       .then(function(r){ return r.json(); })
       .then(function(d){
         document.getElementById('info').innerHTML = '<b>' + esc(d.business) + ' - ' + d.rating + ' estrelas (' + d.total + ')</b> - ' + esc(d.mode);
+        total = d.reviews.length;
         var box = document.getElementById('lista');
         box.innerHTML = d.reviews.map(card).join('');
         box.querySelectorAll('.kg-card').forEach(function(c){
           var btn = c.querySelector('.kg-more');
           if (!btn) return;
-          btn.addEventListener('click', function(){
+          btn.addEventListener('click', function(ev){
+            ev.stopPropagation();
             var short = c.querySelector('.short');
             var full = c.querySelector('.full');
             var open = full.style.display !== 'none';
@@ -69,8 +132,9 @@
             btn.textContent = open ? 'Read more' : 'Show less';
           });
         });
+        page=0; update();
       })
-      .catch(function(){ document.getElementById('lista').innerText = 'Erro ao carregar API'; });
+      .catch(function(){ document.getElementById('lista').innerHTML = 'Erro ao carregar API'; });
   </script>
 </body>
 </html>
