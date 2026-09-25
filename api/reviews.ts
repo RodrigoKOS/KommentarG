@@ -1,38 +1,36 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-// MODO DE TESTE: se não tiver chave do Google, devolve falsos.
+// MODO DE TESTE: se não tiver chave do Google, devolve falsos no mesmo formato do layout.
 const MOCK_REVIEWS = [
   {
     id: '1',
-    author: 'Maria S.',
+    author: 'Sonaria Linhares',
+    authorPhoto: '',
+    authorUri: '',
     stars: 5,
-    text: 'Atendimento maravilhoso, voltarei com certeza!',
-    date: '2026-09-10',
+    text: 'Minha Fisioterapeuta Lindaaa. Fiz 30 sessões de Fisioterapia, depois iniciei o Pilates e estou a 4 anos. Devido uma melhora incrível na minha qualidade de vida, recomendo de olhos fechados!',
+    date: '2026-09-06',
+    relativeTime: '19 days ago',
     source: 'mock'
   },
   {
     id: '2',
-    author: 'João P.',
+    author: 'Josefran Zumba',
+    authorPhoto: '',
+    authorUri: '',
     stars: 5,
-    text: 'Lugar incrível, super recomendo.',
-    date: '2026-09-12',
-    source: 'mock'
-  },
-  {
-    id: '3',
-    author: 'Ana L.',
-    stars: 4,
-    text: 'Muito bom, só a espera foi um pouco longa.',
-    date: '2026-09-15',
+    text: 'Sem dúvidas a melhor da região. Pessoal comprometido com o trabalho e atenciosos. Sugerem, fazem protótipos e alcançam os desejos do cliente. Parabéns!',
+    date: '2024-02-16',
+    relativeTime: '2 anos atrás',
     source: 'mock'
   }
 ];
 
 function mockResponse(res: VercelResponse) {
   return res.status(200).json({
-    business: 'Minha Empresa Exemplo',
-    rating: 4.9,
-    total: MOCK_REVIEWS.length,
+    business: 'Desata Estúdio Design',
+    rating: 5,
+    total: 10,
     mode: 'mock - coloque GOOGLE_MAPS_API_KEY e GOOGLE_PLACE_ID na Vercel para dados reais',
     reviews: MOCK_REVIEWS
   });
@@ -44,12 +42,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
   const placeId = process.env.GOOGLE_PLACE_ID;
 
-  // Sem chave -> modo falso para não quebrar o visual
   if (!apiKey || !placeId) {
     return mockResponse(res);
   }
 
-  // Se passou ?mock=true força o falso para testar visual
   if (req.query.mock === 'true') {
     return mockResponse(res);
   }
@@ -72,9 +68,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const reviews = (data.reviews || []).map((rv: any, i: number) => ({
       id: String(i + 1),
       author: rv.authorAttribution?.displayName || 'Anônimo',
+      authorPhoto: rv.authorAttribution?.photoUri || '',
+      authorUri: rv.authorAttribution?.uri || rv.googleMapsUri || '',
       stars: rv.rating || 0,
-      text: rv.text?.text || '',
+      text: rv.text?.text || rv.originalText?.text || '',
       date: rv.publishTime?.slice(0, 10) || '',
+      relativeTime: rv.relativePublishTimeDescription || '',
       source: 'google-places'
     }));
 
